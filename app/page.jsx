@@ -46,12 +46,13 @@ export default function Dashboard() {
   }
   const handleGetEstimate = () => {}
   return (
-    (<div className="w-full max-w-4xl mx-auto p-6 sm:p-8 md:p-10">
-      <div className="flex flex-col gap-8">
-        <div>
-          <h1 className="text-3xl font-bold">Solar Estimator Dashboard</h1>
-          <p className="text-muted-foreground">Get an estimate of your solar energy potential.</p>
-        </div>
+    // (<div className="w-full max-w-4xl mx-auto p-6 sm:p-8 md:p-10">
+    //   <div className="flex flex-col gap-8">
+    //     <div>
+    //       <h1 className="text-3xl font-bold">Solar Estimator Dashboard</h1>
+    //       <p className="text-muted-foreground">Get an estimate of your solar energy potential.</p>
+    //     </div>
+      <div>
         <Card>
           <CardHeader>
             <CardTitle>Solar Estimate</CardTitle>
@@ -116,7 +117,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="grid gap-4">
-                <Card>
+                <Card className="bg-card-foreground">
                   <CardHeader>
                     <CardTitle>Estimated Solar Energy Production</CardTitle>
                   </CardHeader>
@@ -152,31 +153,10 @@ export default function Dashboard() {
             </Button>
           </CardFooter>
         </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Solar Energy Production Forecast</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="w-full aspect-[4/3]">
-              <TimeseriesChart className="w-full aspect-[4/3]" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Solar Estimate Map</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="w-full aspect-[4/3]">
-              <div>
-                <div />
-                <div />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        
+       
       </div>
-    </div>)
+    // </div>)
   );
 }
 
