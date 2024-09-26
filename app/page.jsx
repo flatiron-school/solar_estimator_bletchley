@@ -19,7 +19,7 @@ To read more about using these font, please visit the Next.js documentation:
 **/
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardHeader,
@@ -45,6 +45,9 @@ export default function Dashboard() {
   const [address, setAddress] = useState("");
   const [location, setLocation] = useState(null);
   const [locationInput, setLocationInput] = useState("address");
+  const [direction, setDirection] = useState("")
+  const [capacity, setCapacity] = useState("")
+  
   const handleAddressChange = (e) => {
     setAddress(e.target.value);
   };
@@ -58,13 +61,42 @@ export default function Dashboard() {
       });
     }
   };
-  const handleGetEstimate = () => {};
-
-  const handleLocationRadios = (e) => {
-    console.log("🚀 ~ handleLocationRadios ~ e:", e.target.value)
+  
+  const handleLocationRadios = (value) => {
+    console.log("🚀 ~ handleLocationRadios ~ e:", value)
     
-    setLocationInput(e.target.value)
+    setLocationInput(value)
   };
+
+  const handleDirectionChange = value => setDirection(value)
+
+  const handleCapacityChange = e => setCapacity(e.target.value)
+
+  const handleGetEstimate = () => {
+    console.log(process.env)
+    const apiKey = process.env.NEXT_PUBLIC_SOLCAST_API_KEY
+    console.log(apiKey ? "present": "not accessed")
+    const requestOptions = {
+      method: 'GET',
+      redirect: 'follow',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`
+      },
+    };
+    const azimuthMapper = {
+      "north": "0",
+      "west": "90",
+      "south": "180",
+      "east": "-90"
+    }
+    
+    fetch(`https://api.solcast.com.au/data/forecast/rooftop_pv_power?latitude=${location.lat}{}&longitude=${location.long}{}&hours=24&period=PT30M&output_parameters=pv_power_rooftop&azimuth=${azimuthMapper[direction]}capacity=${capacity}&format=json`, requestOptions)
+      .then(response => response.json())
+      .then(result => console.log(result))
+      .catch(error => console.log('error', error));
+
+  };
+
   return (
     <div>
       <Card>
@@ -80,7 +112,7 @@ export default function Dashboard() {
               <RadioGroup
                 defaultValue="address"
                 className="flex items-center gap-4"
-                onValueChange={(value) => setLocationInput(value)}
+                onValueChange={(value) => handleLocationRadios(value)}
               >
                 <Label
                   htmlFor="address-radio"
@@ -136,7 +168,7 @@ export default function Dashboard() {
                 <Label htmlFor="direction">Compass Direction</Label>
                 <Select
                   id="direction"
-                  required
+                  onValueChange={handleDirectionChange}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select direction" />
@@ -157,6 +189,8 @@ export default function Dashboard() {
                   min="1"
                   placeholder="5"
                   required
+                  value={capacity}
+                  onChange={handleCapacityChange}
                 />
               </div>
             </div>
