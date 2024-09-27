@@ -40,25 +40,49 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { ResponsiveLine } from "@nivo/line";
+import { mockApiResponse, calculateAnnualPowerOutput } from "@/lib/mockApi";
+
+
 
 export default function Dashboard() {
+
   const [address, setAddress] = useState("");
-  const [location, setLocation] = useState(null);
   const [locationInput, setLocationInput] = useState("address");
+  const [location, setLocation] = useState(null);
   const [direction, setDirection] = useState("")
   const [capacity, setCapacity] = useState("")
+  const [annualOutput, setAnnualOutput] = useState(0);
+  
+  console.log("Component mounted, initial location:", location);
+
+  useEffect(() => {
+    console.log("Effect ran, location:", location);
+  }, [location]);
+
+  useEffect(()=>{
+    const output = calculateAnnualPowerOutput()
+    setAnnualOutput(output)
+  })
   
   const handleAddressChange = (e) => {
     setAddress(e.target.value);
   };
+  
   const handleGetLocation = () => {
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        setLocation({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        });
-      });
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          console.log("Geolocation successful, position:", position);
+          setLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+          console.log("Set location:", location);
+        },
+        (error) => {
+          console.error("Geolocation error:", error);
+        }
+      );
     }
   };
   
@@ -72,28 +96,37 @@ export default function Dashboard() {
 
   const handleCapacityChange = e => setCapacity(e.target.value)
 
-  const handleGetEstimate = () => {
-    console.log(process.env)
-    const apiKey = process.env.NEXT_PUBLIC_SOLCAST_API_KEY
-    console.log(apiKey ? "present": "not accessed")
-    const requestOptions = {
-      method: 'GET',
-      redirect: 'follow',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`
-      },
-    };
-    const azimuthMapper = {
-      "north": "0",
-      "west": "90",
-      "south": "180",
-      "east": "-90"
-    }
+  const handleGetEstimate = async () => {
+    const apiKey = process.env.NEXT_PUBLIC_SOLCAST_API_KEY;
+    const url = new URL('/api/get-solar-estimate', window.location.origin);
     
-    fetch(`https://api.solcast.com.au/data/forecast/rooftop_pv_power?latitude=${location.lat}{}&longitude=${location.long}{}&hours=24&period=PT30M&output_parameters=pv_power_rooftop&azimuth=${azimuthMapper[direction]}capacity=${capacity}&format=json`, requestOptions)
-      .then(response => response.json())
-      .then(result => console.log(result))
-      .catch(error => console.log('error', error));
+    url.searchParams.append('latitude', location.lat);
+    url.searchParams.append('longitude', location.long);
+    url.searchParams.append('hours', '24');
+    url.searchParams.append('period', 'PT30M');
+    url.searchParams.append('output_parameters', 'pv_power_rooftop');
+    url.searchParams.append('azimuth', direction);
+    url.searchParams.append('capacity', capacity);
+
+    try {
+      const response = await fetch(url.toString(), {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const data = await response.json();
+      console.log('Solar Estimate Data:', data);
+      // Handle the data as needed
+    } catch (error) {
+      console.error('Error getting solar estimate:', error);
+      // Handle the error appropriately
+    }
 
   };
 
@@ -195,12 +228,12 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="grid gap-4">
-              <Card className="bg-card-foreground">
+              <Card className="text-muted-foreground">
                 <CardHeader>
                   <CardTitle>Estimated Solar Energy Production</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-4xl font-bold">12,345 kWh/year</div>
+                  <div className="text-4xl font-bold">{annualOutput.toFixed(2)} kWh/year</div>
                   <p className="text-muted-foreground">
                     Based on your location and solar array capacity.
                   </p>

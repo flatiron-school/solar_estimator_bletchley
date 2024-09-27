@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from 'react'
 import { Sun, Battery, ArrowUpRight, ArrowDownRight } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
