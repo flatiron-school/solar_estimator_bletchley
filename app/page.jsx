@@ -75,7 +75,7 @@ export default function Dashboard() {
           console.log("Geolocation successful, position:", position);
           setLocation({
             lat: position.coords.latitude,
-            lng: position.coords.longitude,
+            long: position.coords.longitude,
           });
           console.log("Set location:", location);
         },
@@ -96,17 +96,19 @@ export default function Dashboard() {
 
   const handleCapacityChange = e => setCapacity(e.target.value)
 
+  const apiKey = process.env.NEXT_PUBLIC_SOLCAST_API_KEY;
+  console.log("🚀 ~ Dashboard ~ apiKey:", apiKey)
+  
   const handleGetEstimate = async () => {
-    const apiKey = process.env.NEXT_PUBLIC_SOLCAST_API_KEY;
     const url = new URL('/api/get-solar-estimate', window.location.origin);
     
-    url.searchParams.append('latitude', location.lat);
-    url.searchParams.append('longitude', location.long);
+    url.searchParams.append('latitude', location?.lat ?? '');
+    url.searchParams.append('longitude', location?.long ?? '');
     url.searchParams.append('hours', '24');
     url.searchParams.append('period', 'PT30M');
     url.searchParams.append('output_parameters', 'pv_power_rooftop');
-    url.searchParams.append('azimuth', direction);
-    url.searchParams.append('capacity', capacity);
+    url.searchParams.append('azimuth', direction ?? '');
+    url.searchParams.append('capacity', capacity ?? '');
 
     try {
       const response = await fetch(url.toString(), {
