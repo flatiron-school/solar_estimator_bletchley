@@ -41,6 +41,7 @@ import {
 } from "@/components/ui/select";
 import { ResponsiveLine } from "@nivo/line";
 import { mockApiResponse, calculateAnnualPowerOutput } from "@/lib/mockApi";
+import { useForecastData } from "./context/ForecastContext";
 
 
 
@@ -52,6 +53,9 @@ export default function Dashboard() {
   const [direction, setDirection] = useState("")
   const [capacity, setCapacity] = useState("")
   const [annualOutput, setAnnualOutput] = useState(0);
+  // const [forecastData, setForecastData] = useState({ forecasts: [] })
+
+  const { forecastData, setForecastData } = useForecastData()
   
   console.log("Component mounted, initial location:", location);
 
@@ -60,9 +64,9 @@ export default function Dashboard() {
   }, [location]);
 
   useEffect(()=>{
-    const output = calculateAnnualPowerOutput()
+    const output = calculateAnnualPowerOutput(forecastData)
     setAnnualOutput(output)
-  })
+  }, [forecastData]);
   
   const handleAddressChange = (e) => {
     setAddress(e.target.value);
@@ -113,9 +117,6 @@ export default function Dashboard() {
     try {
       const response = await fetch(url.toString(), {
         method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`
-        },
       });
 
       if (!response.ok) {
@@ -125,6 +126,7 @@ export default function Dashboard() {
       const data = await response.json();
       console.log('Solar Estimate Data:', data);
       // Handle the data as needed
+      setForecastData(data)
     } catch (error) {
       console.error('Error getting solar estimate:', error);
       // Handle the error appropriately
